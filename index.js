@@ -1,16 +1,19 @@
 import express from "express";
 import fetch from "node-fetch";
 
-const express = require('express');
 const app = express();
-
 app.use(express.json());
 
-// Example route
-app.post('/', (req, res) => {
-  console.log('Received:', req.body);
-  res.send({ status: 'ok' });
-});
+// Make sure to set your bot token in environment variables
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+
+// Example route to send a DM
+app.post("/send", async (req, res) => {
+  const { discordId, message } = req.body;
+
+  if (!discordId || !message) {
+    return res.status(400).json({ ok: false, error: "Missing discordId or message" });
+  }
 
   try {
     // Create DM channel
@@ -18,9 +21,9 @@ app.post('/', (req, res) => {
       method: "POST",
       headers: {
         "Authorization": `Bot ${DISCORD_BOT_TOKEN}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ recipient_id: discordId })
+      body: JSON.stringify({ recipient_id: discordId }),
     });
 
     const dmData = await dm.json();
@@ -29,14 +32,17 @@ app.post('/', (req, res) => {
       return res.status(500).json({ ok: false, error: dmData.message });
 
     // Send message
-    const send = await fetch(`https://discord.com/api/v10/channels/${dmData.id}/messages`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bot ${DISCORD_BOT_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ content: message })
-    });
+    const send = await fetch(
+      `https://discord.com/api/v10/channels/${dmData.id}/messages`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bot ${DISCORD_BOT_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: message }),
+      }
+    );
 
     const sendData = await send.json();
 
@@ -49,12 +55,9 @@ app.post('/', (req, res) => {
   }
 });
 
+// Health check route
 app.get("/", (_, res) => res.send("Relay running!"));
 
-app.listen(10000, () => console.log("Relay online on port 10000"));
-
+// Use the port from Render or default to 10000
 const PORT = process.env.PORT || 10000;
-
-app.listen(PORT, () => {
-  console.log(`Relay online on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Relay online on port ${PORT}`));
