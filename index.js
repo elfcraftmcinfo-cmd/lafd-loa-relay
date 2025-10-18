@@ -1,16 +1,16 @@
 import express from "express";
 import fetch from "node-fetch";
 
+const express = require('express');
 const app = express();
+
 app.use(express.json());
 
-const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
-
-app.post("/dm", async (req, res) => {
-  const { discordId, message } = req.body;
-
-  if (!discordId || !message)
-    return res.status(400).json({ ok: false, error: "Missing parameters" });
+// Example route
+app.post('/', (req, res) => {
+  console.log('Received:', req.body);
+  res.send({ status: 'ok' });
+});
 
   try {
     // Create DM channel
@@ -52,3 +52,9 @@ app.post("/dm", async (req, res) => {
 app.get("/", (_, res) => res.send("Relay running!"));
 
 app.listen(10000, () => console.log("Relay online on port 10000"));
+
+const PORT = process.env.PORT || 10000;
+
+app.listen(PORT, () => {
+  console.log(`Relay online on port ${PORT}`);
+});
